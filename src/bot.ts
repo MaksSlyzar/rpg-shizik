@@ -37,7 +37,7 @@ client.on("messageCreate", async message => {
     if (message.author.bot == true)
         return;
 
-    const compas = new CompasManager(message.author, message.channel as TextChannel);
+    const compas = new CompasManager(message.author, message.channel as TextChannel, [], 0);
 
     // const mainGuild = client.guilds.cache.find(g => g.id == "762420182047260703")?.emojis;
     // const emojies = mainGuild?.cache.map(em => em)

@@ -72,7 +72,7 @@ exports.client.on("messageCreate", function (message) { return __awaiter(void 0,
     return __generator(this, function (_a) {
         if (message.author.bot == true)
             return [2 /*return*/];
-        compas = new CompasManager_1.default(message.author, message.channel);
+        compas = new CompasManager_1.default(message.author, message.channel, [], 0);
         // const mainGuild = client.guilds.cache.find(g => g.id == "762420182047260703")?.emojis;
         // const emojies = mainGuild?.cache.map(em => em)
         if (message.content[0] != "!")

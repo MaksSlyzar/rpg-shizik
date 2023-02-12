@@ -1,11 +1,20 @@
-import { AwaitReactionsOptions, Embed, EmbedBuilder, Message, MessageActionRowComponent, MessageReaction, ReactionCollector, ReactionEmoji, TextChannel, User } from "discord.js";
+import { AwaitReactionsOptions, Embed, EmbedBuilder, Message, MessageActionRowComponent, MessageActivityType, MessageReaction, ReactionCollector, ReactionEmoji, TextChannel, User } from "discord.js";
 import CompassModule from "./CompassModule";
+import Collection from "./Collection";
 
 class CompassManager extends CompassModule {
-    constructor (user: User, channel: TextChannel) {
-        super(user, channel);
+    constructor (user: User, channel: TextChannel, history: Array<CompassModule>, index: number, message?: Message) {
+        super(user, channel, history, index, message);
 
-        this.generateMessage();
+
+        if (history.length == 0)
+            history.push(this);
+        
+        if (!message)
+            channel.send("Generating message, wait please:)").then(message => {
+                this.message = message;
+                this.generateMessage();
+            });
     }
 
     embedMessage () {
@@ -17,12 +26,15 @@ class CompassManager extends CompassModule {
 
     }
 
-    async generateMessage (message: Message) {
+    async generateMessage () {
         const embed = this.embedMessage();
         
-        this.message = await this.channel.send({embeds: [embed]});
+        // await this.message.edit("_");
+        await this.message.edit({embeds: [embed], content: ""});
 
-        await this.message.react("📙");
+
+        const emojies = ["⬅️", "➡️", "📙"]
+        emojies.map(async emoji => { await this.message.react(emoji) });
         
         this.setupCollector();
 
@@ -38,13 +50,23 @@ class CompassManager extends CompassModule {
 
     setupCollector () {
         const filter = (reaction: MessageReaction, user: User) => {
-            return ["📙"].includes(reaction.emoji.name) && user.id === this.user.id;
+            return ["⬅️", "➡️", "📙"].includes(reaction.emoji.name) && user.id === this.user.id;
         };
 
         const collector = this.message.createReactionCollector({ filter: filter, time: 15000 });
 
         collector.on("collect", (reaction, user) => {
-            console.log(reaction);
+            switch (reaction.emoji.name) {
+                case "📙":
+                    this.pushHistory(new Collection(this.user, this.channel, this.history, this.index + 1, this.message));
+                    this.message.reactions.removeAll();
+                    collector.removeAllListeners();
+                break;
+
+                case "⬅️":
+
+                break;
+            }
         });
     }
 }

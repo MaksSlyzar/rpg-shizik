@@ -56,11 +56,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var discord_js_1 = require("discord.js");
 var CompassModule_1 = __importDefault(require("./CompassModule"));
+var Collection_1 = __importDefault(require("./Collection"));
 var CompassManager = /** @class */ (function (_super) {
     __extends(CompassManager, _super);
-    function CompassManager(user, channel) {
-        var _this = _super.call(this, user, channel) || this;
-        _this.generateMessage();
+    function CompassManager(user, channel, history, index, message) {
+        var _this = _super.call(this, user, channel, history, index, message) || this;
+        if (history.length == 0)
+            history.push(_this);
+        if (!message)
+            channel.send("Generating message, wait please:)").then(function (message) {
+                _this.message = message;
+                _this.generateMessage();
+            });
         return _this;
     }
     CompassManager.prototype.embedMessage = function () {
@@ -70,20 +77,28 @@ var CompassManager = /** @class */ (function (_super) {
             // .setAuthor({ name: `${this.user.username}#${this.user.discriminator}`})
             .setColor("#2F3136");
     };
-    CompassManager.prototype.generateMessage = function (message) {
+    CompassManager.prototype.generateMessage = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var embed, _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var embed, emojies;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
                         embed = this.embedMessage();
-                        _a = this;
-                        return [4 /*yield*/, this.channel.send({ embeds: [embed] })];
+                        // await this.message.edit("_");
+                        return [4 /*yield*/, this.message.edit({ embeds: [embed], content: "" })];
                     case 1:
-                        _a.message = _b.sent();
-                        return [4 /*yield*/, this.message.react("📙")];
-                    case 2:
-                        _b.sent();
+                        // await this.message.edit("_");
+                        _a.sent();
+                        emojies = ["⬅️", "➡️", "📙"];
+                        emojies.map(function (emoji) { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, this.message.react(emoji)];
+                                case 1:
+                                    _a.sent();
+                                    return [2 /*return*/];
+                            }
+                        }); }); });
                         this.setupCollector();
                         return [2 /*return*/];
                 }
@@ -101,11 +116,19 @@ var CompassManager = /** @class */ (function (_super) {
     CompassManager.prototype.setupCollector = function () {
         var _this = this;
         var filter = function (reaction, user) {
-            return ["📙"].includes(reaction.emoji.name) && user.id === _this.user.id;
+            return ["⬅️", "➡️", "📙"].includes(reaction.emoji.name) && user.id === _this.user.id;
         };
         var collector = this.message.createReactionCollector({ filter: filter, time: 15000 });
         collector.on("collect", function (reaction, user) {
-            console.log(reaction);
+            switch (reaction.emoji.name) {
+                case "📙":
+                    _this.pushHistory(new Collection_1.default(_this.user, _this.channel, _this.history, _this.index + 1, _this.message));
+                    _this.message.reactions.removeAll();
+                    collector.removeAllListeners();
+                    break;
+                case "⬅️":
+                    break;
+            }
         });
     };
     return CompassManager;
