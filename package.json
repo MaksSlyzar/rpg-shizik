@@ -20,6 +20,7 @@
     "discord.js": "^14.6.0",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
-    "play-dl": "^1.9.6"
+    "play-dl": "^1.9.6",
+    "typescript": "^4.9.5"
   }
 }
